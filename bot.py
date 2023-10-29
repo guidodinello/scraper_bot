@@ -66,7 +66,7 @@ def main():
             info = info.text
 
             code, *title = info.strip().split("-")
-            # Normalizamos el texto a mayúsculas sin tildes
+            # Normalizacion del texto
             title = unidecode("".join(title).strip()).upper()
 
             if contiene_palabras_clave(title, KEYWORDS):
