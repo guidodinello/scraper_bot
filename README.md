@@ -8,7 +8,7 @@ it is intended to be used as a daily scheduled task, for instance, using cron.
 ## Installation
 
 ```bash
-git clone git@github.com:guidodinello/scrapper_bot.git
+git clone git@github.com:guidodinello/scraper_bot.git
 cd bot
 pip3 install -r requirements.txt
 chmod +x runner.sh
