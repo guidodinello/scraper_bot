@@ -6,7 +6,7 @@ from unidecode import unidecode
 
 logging.basicConfig(
     stream=sys.stdout,
-    level=logging.ERROR,
+    level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s")
 
 # URL de la página a monitorear
