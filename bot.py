@@ -3,18 +3,32 @@ import logging
 import requests
 from bs4 import BeautifulSoup
 from unidecode import unidecode
+import os
+
+from io import StringIO
+
+# Create a StringIO object to accumulate log messages
+log_accumulator = StringIO()
 
 logging.basicConfig(
-    stream=sys.stdout,
+    stream=log_accumulator,  # sys.stdout,
     level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s")
+    format="%(asctime)s - %(levelname)s - %(message)s ",
+)
 
 # URL de la página a monitorear
 URL = "https://apps.ute.com.uy/LlamadosExternos/LstLlamados.aspx"
 
 # Palabras clave (sin tildes y en mayúsculas)
-KEYWORDS = ["TIC", "SISTEMAS", "INFORMATICA",
-            "COMPUTACION", "TECNOLOGICO", "ESTUDIANTES", "AVANZADOS"]
+KEYWORDS = [
+    "TIC",
+    "SISTEMAS",
+    "INFORMATICA",
+    "COMPUTACION",
+    "TECNOLOGICO",
+    "ESTUDIANTES",
+    "AVANZADOS",
+]
 
 
 def obtener_contenido_pagina(url):
@@ -25,9 +39,8 @@ def obtener_contenido_pagina(url):
     print("Error al acceder a la página:", response.status_code)
     return None
 
+
 # Función para verificar si una publicación contiene palabras clave
-
-
 def contiene_palabras_clave(publicacion, palabras_clave):
     for palabra in palabras_clave:
         if palabra in publicacion:
@@ -44,6 +57,11 @@ Publicación encontrada:
 """
 
 
+def notify(text):
+    flags = "--expire-time=7000 --icon='/usr/share/icons/Mint-Y/apps/64/caffeine.png' --category='Work'"
+    os.system(f"notify-send {flags} 'UTE scrapper bot:\n\n' '{text}'")
+
+
 def main():
     try:
         contenido_pagina = obtener_contenido_pagina(URL)
@@ -56,7 +74,6 @@ def main():
         publicaciones = table.find_all("tr")
 
         for publicacion in publicaciones:
-
             info = publicacion.find("td")
             if not info:
                 continue
@@ -73,6 +90,8 @@ def main():
                 logging.info(format_publicacion(title, code))
 
         logging.info("%s publicaciones analizadas", len(publicaciones))
+        notification_body = log_accumulator.getvalue()
+        notify(notification_body)
 
     except Exception:
         logging.error("While analyzing %s", publicacion)
