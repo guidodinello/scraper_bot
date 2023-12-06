@@ -1,25 +1,29 @@
-import sys
 import logging
+import os
+from io import StringIO
+
 import requests
 from bs4 import BeautifulSoup
 from unidecode import unidecode
-import os
-
-from io import StringIO
-
-# Create a StringIO object to accumulate log messages
-log_accumulator = StringIO()
 
 logging.basicConfig(
-    stream=log_accumulator,  # sys.stdout,
-    level=logging.INFO,
+    level=logging.DEBUG,
     format="%(asctime)s - %(levelname)s - %(message)s ",
 )
 
-# URL de la página a monitorear
+open("./log.txt", "w").close()  # clean old logs
+file_log = logging.FileHandler("./log.txt", encoding="utf-8")
+logging.getLogger().addHandler(file_log)
+
+log_accumulator = StringIO()
+log_handler = logging.StreamHandler(log_accumulator)
+log_handler.setLevel(logging.INFO)
+logging.getLogger().addHandler(log_handler)
+
+
 URL = "https://apps.ute.com.uy/LlamadosExternos/LstLlamados.aspx"
 
-# Palabras clave (sin tildes y en mayúsculas)
+# should be in caps and shouldnt contain accents
 KEYWORDS = [
     "TIC",
     "SISTEMAS",
@@ -36,11 +40,10 @@ def obtener_contenido_pagina(url):
     if response.status_code == 200:
         return response.text
 
-    print("Error al acceder a la página:", response.status_code)
+    logging.error("Error al acceder a la página: %i", response.status_code)
     return None
 
 
-# Función para verificar si una publicación contiene palabras clave
 def contiene_palabras_clave(publicacion, palabras_clave):
     for palabra in palabras_clave:
         if palabra in publicacion:
@@ -88,13 +91,15 @@ def main():
 
             if contiene_palabras_clave(title, KEYWORDS):
                 logging.info(format_publicacion(title, code))
+            else:
+                logging.debug(format_publicacion(title, code) + "[NO MATCH]\n")
 
         logging.info("%s publicaciones analizadas", len(publicaciones))
         notification_body = log_accumulator.getvalue()
         notify(notification_body)
 
     except Exception:
-        logging.error("While analyzing %s", publicacion)
+        logging.error("Error al analizar publicacion: %s", publicacion)
         raise
 
 

@@ -1,5 +1,7 @@
+#!/bin/bash
 
 # cd to the directory of this file
 cd "$(dirname "$0")" || exit
-. ./venv/bin/activate
-python3.11 ./bot.py
+# shellcheck source=venv/bin/activate
+. venv/bin/activate
+python bot.py
